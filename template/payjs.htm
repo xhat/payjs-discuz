@@ -1,0 +1,83 @@
+<style>
+    #qrcode p{color:#0074c9;}
+    #qrcode img{border:1px solid #ccc;padding:2px;width: 160px;}
+    #payjs_submit{
+        border: 0 !important;
+        border-radius: 2px !important;
+        box-shadow: none;
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #fff;
+        background-color: #00a65a;
+        font-weight: 400 !important;
+    }
+    .gray{color:gray;}
+</style>
+
+<!--{if ($payjs['integral_proportion'] && $payjs['integral_type'] && $payjs['mchid'] && $payjs['key'])}-->
+<div style="padding:20px;border:1px solid #ccc;border-top:0;line-height: 36px;">
+    <p><strong>请输入要充值的人民币金额</strong></p>
+    <p><input type="text" name="money" id="money" value="" size="10" class="" />元</p>
+    <p class="gray">1元人民币可以兑换 {$payjs['integral_proportion']}  {$_G['setting']['extcredits'][$payjs['integral_type']]['title']}</p>
+    <p id="button"><button type="button" id="payjs_submit" class="vm" >点击微信扫码支付</button></p>
+    <div id="qrcode"> </div>
+</div>
+<!--{else}-->
+<div style="padding:20px;border:1px solid #ccc;border-top:0;line-height: 36px;">
+    <p><strong>支付功能尚未配置</strong></p>
+</div>
+<!--{/if}-->
+
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#payjs_submit").click(function(){
+            money = $('#money').val();
+            if (isNaN(money)) { alert('请输入数字'); exit; }
+            if (money <= 0) { alert('最低1元'); return; }
+
+            $('#button').hide();
+            $("#qrcode").html('\n' +
+                '<svg width="60px"  height="60px"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-wheel">\n' +
+                '    <g transform="rotate(66 50 50)">\n' +
+                '      <animateTransform attributeName="transform" type="rotate" calcMode="linear" values="0 50 50;360 50 50" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"></animateTransform>\n' +
+                '      <ellipse cx="50" cy="50" ng-attr-rx="{{config.radiusOut}}" ry="0.1" fill="none" ng-attr-stroke="{{config.c2}}" ng-attr-stroke-width="{{config.width}}" transform="rotate(0 50 50)" rx="30" stroke="#fac090" stroke-width="5"></ellipse>\n' +
+                '      <ellipse cx="50" cy="50" ng-attr-rx="{{config.radiusOut}}" ry="0.1" fill="none" ng-attr-stroke="{{config.c2}}" ng-attr-stroke-width="{{config.width}}" transform="rotate(45 50 50)" rx="30" stroke="#fac090" stroke-width="5"></ellipse>\n' +
+                '      <ellipse cx="50" cy="50" ng-attr-rx="{{config.radiusOut}}" ry="0.1" fill="none" ng-attr-stroke="{{config.c2}}" ng-attr-stroke-width="{{config.width}}" transform="rotate(90 50 50)" rx="30" stroke="#fac090" stroke-width="5"></ellipse>\n' +
+                '      <ellipse cx="50" cy="50" ng-attr-rx="{{config.radiusOut}}" ry="0.1" fill="none" ng-attr-stroke="{{config.c2}}" ng-attr-stroke-width="{{config.width}}" transform="rotate(135 50 50)" rx="30" stroke="#fac090" stroke-width="5"></ellipse>\n' +
+                '    </g>\n' +
+                '    <circle cx="50" cy="50" ng-attr-r="{{config.radiusOut}}" fill="none" ng-attr-stroke="{{config.c1}}" ng-attr-stroke-width="{{config.width}}" r="30" stroke="#ff7c81" stroke-width="5"></circle>\n' +
+                '    <circle cx="50" cy="50" ng-attr-r="{{config.radiusIn}}" ng-attr-fill="{{config.c3}}" ng-attr-stroke="{{config.c2}}" ng-attr-stroke-width="{{config.width}}" r="10" fill="#ffffcb" stroke="#fac090" stroke-width="5"></circle>\n' +
+                '  </svg>');
+            $.post("plugin.php?id=payjs",{ac:"pay", money:money}, function (data) {
+                console.log(data);
+                var obj = eval('(' + data + ')');
+                var orderid = obj.out_trade_no;
+                checkOrder(orderid);
+                $("#qrcode").html("<p>支付完成自动显示</p><img src='"+obj.qrcode+"'>");
+            });
+        });
+    });
+
+    function checkOrder(orderid) {
+        var repeat = 60;
+        var timer = setInterval(function() {
+            if (repeat == 0) {
+                clearInterval(timer);
+            } else {
+                repeat--;
+                check(orderid);
+            }
+        }, 2000);
+    }
+
+    function check(id) {
+        $.post("plugin.php",{id:'payjs', ac:"check", orderid:id}, function (data) {
+            if (data == 'paid') {
+                $("#qrcode").html('<span style="font-size:14px;font-weight:200;color:#0073c8;margin-top:20px;">恭喜，充值成功!</span>');
+                clearInterval(timer);
+            }
+        });
+    }
+</script>
