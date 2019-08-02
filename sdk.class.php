@@ -16,13 +16,13 @@ class Payjs
         if ($_POST['money'] <= 0) return 'money error';
 
         $out_trade_no = date('YmdHis') . str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT);
-        $data         = [
+        $data         = array(
             'mchid'        => $payjs['mchid'],
             'total_fee'    => $_POST['money'] * 100,
             'out_trade_no' => $out_trade_no,
             'ip'           => $_SERVER['REMOTE_ADDR'],
             'notify_url'   => trim($_G['siteurl'] . 'source/plugin/payjs/notify.php'),
-        ];
+        );
         $data['sign'] = $this->sign($data);
 
         $this->insert($data);
@@ -33,7 +33,7 @@ class Payjs
     public function insert($arr)
     {
         global $_G, $payjs;
-        $data = [
+        $data = array(
             'orderid'    => $arr['out_trade_no'],
             'status'     => 1,
             'uid'        => $_G['uid'],
@@ -41,7 +41,7 @@ class Payjs
             'price'      => $arr["total_fee"] / 100,
             'submitdate' => time(),
             'ip'         => $_SERVER['REMOTE_ADDR'],
-        ];
+        );
 
         C::t('forum_order')->insert($data);
         return;

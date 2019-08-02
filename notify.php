@@ -14,21 +14,21 @@ $orderid = $_REQUEST['out_trade_no'];
 $order = DB::fetch_first("select * from " . DB::table('forum_order') . " where orderid='" . $orderid . "' and status=1");
 if ($order) {
     // 更新订单状态
-    $data  = ['status' => 2, 'confirmdate' => time(),];
-    $where = ['orderid' => $orderid];
+    $data  = array('status' => 2, 'confirmdate' => time());
+    $where = array('orderid' => $orderid);
     DB::update('forum_order', $data, $where);
 
     // 更新用户积分
-    updatemembercount($order['uid'], [$_G['setting']['creditstrans'] => $order['amount']], true, '', 1, '', '微信支付充值');
+    updatemembercount($order['uid'], array($_G['setting']['creditstrans'] => $order['amount']), true, '', 1, '', '微信支付充值');
 
     // 积分消息提醒
-    notification_add($order['uid'], 'system', 'addfunds', [
+    notification_add($order['uid'], 'system', 'addfunds', array(
         'orderid'     => $order['orderid'],
         'price'       => $order['price'],
         'from_id'     => 0,
         'from_idtype' => 'buycredit',
         'value'       => $_G['setting']['extcredits'][$_G['setting']['creditstrans']]['title'] . ' ' . $order['amount'] . ' ' . $_G['setting']['extcredits'][$_G['setting']['creditstrans']]['unit'],
-    ], 1);
+    ), 1);
 }
 
 echo 'success';
