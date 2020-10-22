@@ -13,7 +13,7 @@
 			<item id="description"><![CDATA[通过payjs的微信支付个人接口进行充值积分。]]></item>
 			<item id="datatables"><![CDATA[]]></item>
 			<item id="directory"><![CDATA[payjs/]]></item>
-			<item id="copyright"><![CDATA[dudu]]></item>
+			<item id="copyright"><![CDATA[PAYJS]]></item>
 			<item id="version"><![CDATA[1.1]]></item>
 			<item id="__modules">
 				<item id="0">
